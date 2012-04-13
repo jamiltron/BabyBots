@@ -2,10 +2,10 @@
 require File.expand_path('../lib/baby_bots/version', __FILE__)
 
 Gem::Specification.new do |gem|
-  gem.authors       = ["TODO: Write your name"]
-  gem.email         = ["TODO: Write your email address"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.authors       = ["Justin Hamilton"]
+  gem.email         = ["justinanthonyhamilton@gmail.com"]
+  gem.description   = %q{A tiny finite-state automata library.}
+  gem.summary       = %q{While there are many fsa libraries out there, I wanted to implement my own so I could learn how to create a module/gem, as I am not really a Ruby guy and have no idea how.}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($\)

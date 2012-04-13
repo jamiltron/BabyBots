@@ -23,8 +23,8 @@ module BabyBots
       end
     end
 
-    def start
-      @start.key
+    def restart
+      @curr = @start
     end
 
     def process(event, *args)

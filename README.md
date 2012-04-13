@@ -9,6 +9,3 @@ project, as well as to teach me how to build gems (I'm not really much of
 a Ruby guy).
 
 Let me know of any improviments, thank you!
-
-> Usage:
-> <gem install baby_bots>
