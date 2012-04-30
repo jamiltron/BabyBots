@@ -6,7 +6,8 @@ Gem::Specification.new do |gem|
   gem.email         = ["justinanthonyhamilton@gmail.com"]
   gem.description   = %q{A tiny finite-state automata library.}
   gem.summary       = %q{While there are many fsa libraries out there, I wanted to implement my own so I could learn how to create a module/gem, as I am not really a Ruby guy and have no idea how.}
-  gem.homepage      = ""
+  gem.homepage      = "https://github.com/jamiltron/BabyBots"
+  gem.email         = "justinanthonyhamilton@gmail.com"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
