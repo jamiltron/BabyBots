@@ -48,10 +48,13 @@ module BabyBots
       end
     end
 
+    def state
+      @curr.state
+    end
+
     # this is the driving function behind the fsa, process
     # will check the current state, doing any processing necessary
     # on the input based on whether or not this 
-    
     def process(event=nil)
       # get the current state
       curr_state = @curr
