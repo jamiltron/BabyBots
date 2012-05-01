@@ -1,22 +1,49 @@
 module BabyBots
+  # Transition state used to remove events from a transition table.
+  NOWHERE = :nowhere__
 
+  # The state contained within the BabyBots Finite State Automata.
+  # States have an event that transitions to a new state. They may also
+  # have an event named :else which will be the transition used by the
+  # containing BabyBot when calculating transitions where no such supplied
+  # events exist.
   class State 
     attr_reader :state, :table
     
+    # Sets the state name, as well as an optionally supplied transition table.
     def initialize(state, table={})
+      # state name
       @state = state
+      
+      # transition table
       @table = table
     end
 
-    def add_transition(event, transition, &callback)
-      @table[event] = transition
+    # Adds a transition to the transition table. Table format is 
+    # event => transition, where event is the "input" into the state.
+    #
+    # Transitions are allowed to be deleted by being set to NOWHERE.
+    def add_transition(event, transition)
+      if transition == NOWHERE
+        remove_transition(event)
+      else
+        @table[event] = transition
+      end
     end
 
-    # the idea behind build is that you can call multiple
-    # :event :transition and the build method
-    # will parse them out and add them to state
-    def build(*args)
-      args.map {|k,v| add_transition(k, v) }
+    # Provided a table, merge the state's current transition table
+    # with the supplied one. Note that since this is part of a 
+    # finite state machine, supplying events that already exist
+    # in the transition table override this transition.
+    def build(table)
+      table.each { |k,v| add_transition(k, v) }
+    end
+
+
+    # Delete an entry from the transition table.
+    def remove_transition(event)
+      @table.delete(event)
     end
   end
+
 end

@@ -1,3 +1,4 @@
 module BabyBots
-  VERSION = "0.0.3"
+  # Current development version
+  VERSION = "0.0.4"
 end
