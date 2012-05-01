@@ -32,7 +32,7 @@ module BabyBots
     # state. Note that this machine may only have one start state. Additionally,
     # adding the first start state will set @curr to be this state, after this
     # has been done @curr will remain on whatever state it is currently residing
-    # on, and must be reset using the reset method.
+    # on, and must be reset using the restart method.
     def add_state(state, start=nil)
       # key on state names to the actual state object
       @states[state.state] = state
@@ -130,7 +130,7 @@ module BabyBots
       return ret_val
     end
 
-    # Reset the current state to be the start state.
+    # Restart the current state to be the start state.
     def restart
       @curr = @start
     end
