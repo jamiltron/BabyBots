@@ -61,10 +61,15 @@ module BabyBots
 
       # check if we need to preprocess the event
       if respond_to?("pre_#{@curr.state}")
-        event = send("pre_#{@curr.state}", event)
+        cooked_event = send("pre_#{@curr.state}", event)
       end
 
-      next_state = @states[curr.table[event]]
+      if cooked_event
+        next_state = @states[curr.table[cooked_event]]
+      else
+        next_state = @states[curr.table[event]]
+      end
+
       if next_state.nil?
         next_state = @states[curr.table[:else]]
       end
@@ -80,6 +85,8 @@ module BabyBots
       # as the "return" from any state transition (even self-looping transitions)
       if respond_to?("post_#{@curr.state}")
         ret_val = send("post_#{@curr.state}", event)
+      elsif respond_to?("post_cooked_#{curr.state}")
+        ret_val = send("post_#{@curr.state}", cooked_event)
       end
       
 
