@@ -38,6 +38,18 @@ class BB < BabyBots::BabyBot
   end
 end
 
+class BB2 < BB
+  def post_loading
+    true
+  end
+end
+
+class BB3 < BB
+  def post_loading(event, stuff, mo_stuff)
+    true
+  end
+end
+
 
 describe BabyBots::BabyBot do
   it "should be able to be initiated with no additional initialization" do
@@ -124,4 +136,18 @@ describe BabyBots::BabyBot do
     ret1.should == ret2
     ret2.should == true
   end
+
+  it "should run the example, and not have issue with a zero-arity method" do
+    test = BB2.new
+    test.process(1)
+    test.process(1)
+    test.state.should == :run
+  end
+
+  it "should run the example, and raise an ArgumentError on arity error" do
+    test = BB3.new
+    lambda{ test.process(1)}.should raise_error ArgumentError
+  end
+
+
 end

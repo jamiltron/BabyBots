@@ -24,10 +24,8 @@ class BB < BabyBots::BabyBot
     event.to_s
   end
 
-  def post_ready(event=nil)
-    puts "Leading ready, again event is whatever was supplied before pre_ready."
-    puts "event: #{event}"
-    event
+  def post_ready
+    puts "Leaving ready, notice no parameter is supplied."
   end
 
   def pre_run(event=nil)

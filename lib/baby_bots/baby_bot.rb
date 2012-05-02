@@ -13,6 +13,10 @@ module BabyBots
   class NoSuchTransitionException < Exception
   end
 
+  # # Error to handle incorrect arity on the post_state methods.
+  # class PostMethodArgumentError < ArgumentError
+  # end
+
   # A tiny finite-state automata class.
   class BabyBot
     attr_accessor :curr, :states, :start
@@ -89,7 +93,7 @@ module BabyBots
 
       # check if we need to preprocess the event
       if respond_to?("pre_#{@curr.state}")
-        cooked_event = send("pre_#{@curr.state}", event)
+        cooked_event = my_send("pre_#{@curr.state}", event)
       end
 
       # calculate the next state
@@ -115,9 +119,9 @@ module BabyBots
       # check if we need to postprocess the event, this will act
       # as the "return" from any state transition (even self-looping transitions)
       if respond_to?("post_#{@curr.state}")
-        ret_val = send("post_#{@curr.state}", event)
+        ret_val = my_send("post_#{@curr.state}", event)
       elsif respond_to?("post_cooked_#{curr.state}")
-        ret_val = send("post_#{@curr.state}", cooked_event)
+        ret_val = my_send("post_#{@curr.state}", cooked_event)
       end
       
       # actually transition, and make sure such a transition exists
@@ -133,6 +137,21 @@ module BabyBots
     # Restart the current state to be the start state.
     def restart
       @curr = @start
+    end
+
+    private
+
+    # A wrapper around send, using the arity restrictions assumed by BabyBots.
+    def my_send(method_name, event=nil)
+      m_arity = method(method_name).arity
+      if m_arity == 0
+        ret_val = send(method_name)
+      elsif m_arity == 1 or m_arity == -1
+        ret_val = send(method_name, event)
+      else
+        raise ArgumentError
+      end
+      return ret_val
     end
   end
 
