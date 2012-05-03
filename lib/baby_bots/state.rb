@@ -21,7 +21,6 @@ module BabyBots
 
     # Adds a transition to the transition table. Table format is 
     # event => transition, where event is the "input" into the state.
-    #
     # Transitions are allowed to be deleted by being set to NOWHERE.
     def add_transition(event, transition)
       if transition == NOWHERE
@@ -43,6 +42,11 @@ module BabyBots
     # Delete an entry from the transition table.
     def remove_transition(event)
       @table.delete(event)
+    end
+    
+    # Equality is based on the same transition table.
+    def ==(another_state)
+      if @table == another_state.table then return true else return false end
     end
   end
 

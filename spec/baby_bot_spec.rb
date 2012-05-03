@@ -59,7 +59,7 @@ describe BabyBots::BabyBot do
 
   it "should be able to be initialized with a state table" do
     test = BabyBots::BabyBot.new(TEST_MACHINE1)
-    test.states.should == TEST_MACHINE1
+    test.states.should == {:loading => $loading, :ready => $ready, :run => $run}
   end
 
   it "should have states be able to be added using add_state" do
@@ -70,6 +70,21 @@ describe BabyBots::BabyBot do
     test.states.should == {:loading => $loading, :ready => $ready}
     test.add_state($run)
     test.states.should == {:loading => $loading, :ready => $ready, :run => $run}
+  end
+
+  it "should be able to have states built using the build method" do
+    test = BabyBots::BabyBot.new
+    test.build(TEST_MACHINE1)
+  end
+
+  it "should allow states to be overwritten using build" do
+    test = BabyBots::BabyBot.new(TEST_MACHINE1)
+    test.build({ :loading => {1 => :run, 2 => :loading} })
+
+    test2 = BabyBots::BabyBot.new({ :loading => {1 => :run, 2 => :loading},
+                                   :ready   => {1 => :run, :else => :loading},
+                                   :run     => {:else => :run} })
+    test.states.should == test2.states
   end
 
   it "should run the example, with the starting state being loading" do

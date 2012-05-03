@@ -24,7 +24,8 @@ module BabyBots
     # Accepts an optional hash of states.
     def initialize(states={})
       # Hash of state names to state objects
-      @states = states
+      @states = {}
+      if !states.empty? then build states end
       # Initial state
       @start = nil
       # Current state
@@ -137,6 +138,20 @@ module BabyBots
     # Restart the current state to be the start state.
     def restart
       @curr = @start
+    end
+
+    # Equality is based on if all the states are the same, and if
+    # the machines are currently in the same state.
+    def ==(another_baby)
+      if @curr != another_baby.curr
+        return false
+      end
+
+      @states.keys.each do |k|
+        if @states[k] != another_baby.states[k] then return false end 
+      end
+
+      return true
     end
 
     private
