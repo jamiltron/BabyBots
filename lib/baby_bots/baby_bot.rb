@@ -98,7 +98,7 @@ module BabyBots
       end
 
       # calculate the next state
-      if cooked_event
+      if !cooked_event.nil?
         next_state = @states[curr.table[cooked_event]]
       else
         next_state = @states[curr.table[event]]
