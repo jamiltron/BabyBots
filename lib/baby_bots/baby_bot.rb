@@ -1,8 +1,3 @@
-# A tiny finite-state automata library.
-#
-# Author:: Justin Hamilton (mailto:justinanthonyhamilton@gmail.com)
-# Copyright :: BSD2 (see LICENSE for more details)
-
 module BabyBots
 
   # Error to handle attempts to transition to a state that does not exist.
@@ -12,10 +7,6 @@ module BabyBots
   # Error to handle attempts to use a transition that does not exist.
   class NoSuchTransitionException < Exception
   end
-
-  # # Error to handle incorrect arity on the post_state methods.
-  # class PostMethodArgumentError < ArgumentError
-  # end
 
   # A tiny finite-state automata class.
   class BabyBot
@@ -152,6 +143,15 @@ module BabyBots
       end
 
       return true
+    end
+
+    # Check if a method call is checking that state name.
+    def method_missing(m, *a, &b)
+      if m =~ /^([a-zA-Z_]+)\?$/
+        state == m.to_s.gsub("?","").to_sym
+      else
+        raise NoMethodError
+      end
     end
 
     private

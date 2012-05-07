@@ -164,5 +164,10 @@ describe BabyBots::BabyBot do
     lambda{ test.process(1)}.should raise_error ArgumentError
   end
 
+  it "should allow the current state to be checked with the message {state_name}?" do
+    test = BB.new
+    test.loading?.should == true
+    test.not_ready?.should == false
+  end
 
 end
