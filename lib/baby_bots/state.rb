@@ -2,6 +2,9 @@ module BabyBots
   # Transition state used to remove events from a transition table.
   NOWHERE = :nowhere__
 
+  # Defualt Error Transition
+  ERR     = :err__
+
   # The state contained within the BabyBots Finite State Automata.
   # States have an event that transitions to a new state. They may also
   # have an event named :else which will be the transition used by the
@@ -49,5 +52,7 @@ module BabyBots
       if @table == another_state.table then return true else return false end
     end
   end
+
+  ERRSTATE = State.new(:err__)
 
 end

@@ -1,5 +1,5 @@
 module BabyBots
-
+  
   # Error to handle attempts to transition to a state that does not exist.
   class NoSuchStateException < Exception
   end
@@ -10,17 +10,30 @@ module BabyBots
 
   # A tiny finite-state automata class.
   class BabyBot
-    attr_accessor :curr, :states, :start
+    attr_accessor :curr, :start
 
     # Accepts an optional hash of states.
     def initialize(states={})
       # Hash of state names to state objects
       @states = {}
       if !states.empty? then build states end
+
+      # Add our default error state to provide user-based 'error' handling.
+      add_state(ERRSTATE)
+      
       # Initial state
       @start = nil
       # Current state
       @curr = nil
+    end
+    
+    # Provides the states, minus the default error state (because it isn't
+    # really a state in the true sense). Note that this is NOT a reference
+    # to the BabyBot's actual states, but rather a duplicate.
+    def states
+      new_states = @states.dup
+      new_states.delete(ERR)
+      return new_states
     end
 
     # Adds a new state to the finite-state automata, also accepts
@@ -40,6 +53,12 @@ module BabyBots
         # only set the current state to the start state if @curr is nil.
         if @curr.nil? then @curr = @start end
       end
+    end
+
+    # Since we implement a default error state, this empty will check
+    # if there are any other states aside from that one.
+    def empty?
+      @states.keys.find_all { |k| k != ERR }.empty?
     end
 
     # Build up this machine's states with a given state table. The format of
@@ -68,6 +87,11 @@ module BabyBots
     # Return the current state's actual state.
     def state
       @curr.state
+    end
+
+    # Return the name of the current state
+    def state_name
+      @curr.state.state
     end
 
     # Process the finite state automata with the given event.
@@ -104,23 +128,30 @@ module BabyBots
       # if the event is nil, and there is no :else clause,
       # throw an exception
       if next_state.nil?
-        raise NoSuchTransitionException,
-        "No valid transition #{event} for #{@curr.state}"
+        transition_error(event, @curr.state)
       end
-
-      # check if we need to postprocess the event, this will act
+      
+      # first, check if we need to handle an error function for this state,
+      # then check if we need to postprocess the event, this will act
       # as the "return" from any state transition (even self-looping transitions)
-      if respond_to?("post_#{@curr.state}")
+      if next_state == ERRSTATE
+        if respond_to?("error_#{@curr.state}")
+          ret_val = my_send("error_#{@curr.state}", event)
+        else
+          raise NoSuchTransitionException,
+          "No valid transition #{event} for #{@curr.state}"
+        end
+      elsif respond_to?("post_#{@curr.state}")
         ret_val = my_send("post_#{@curr.state}", event)
       elsif respond_to?("post_cooked_#{curr.state}")
         ret_val = my_send("post_#{@curr.state}", cooked_event)
       end
       
       # actually transition, and make sure such a transition exists
-      @curr = next_state
+      @curr = next_state unless next_state == ERRSTATE
+
       if @curr.nil?
-        raise NoSuchStateException,
-        "No valid state #{@curr} for transition #{event} from #{curr_state}"
+        transition_error(event, @curr.state)
       end
 
       return ret_val
@@ -155,6 +186,12 @@ module BabyBots
     end
 
     private
+
+    # Wrapper for our NoSuchTransitionException
+    def transition_error(event, state)
+      raise NoSuchTransitionException,
+      "No valid transition #{event} for #{state}"
+    end
 
     # A wrapper around send, using the arity restrictions assumed by BabyBots.
     def my_send(method_name, event=nil)

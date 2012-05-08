@@ -6,8 +6,25 @@ $run     = BabyBots::State.new(:run,     {:else => :run})
                                
 
 TEST_MACHINE1 = { :loading => {1 => :ready, :else => :loading},
-                                   :ready   => {1 => :run, :else => :loading},
-                                   :run     => {:else => :run} }
+  :ready   => {1 => :run, :else => :loading},
+  :run     => {:else => :run} }
+
+class ERRTEST < BabyBots::BabyBot
+  def initialize
+    super
+    build({ :loading => {1 => :ready, :else => BabyBots::ERR},
+            :ready   => {0 => :loading, 1 => :run, :else => BabyBots::ERR},
+            :run     => {:else => :run} })
+  end
+
+  def error_loading
+    "Error loading"
+  end
+
+  def error_ready
+    "Error ready"
+  end
+end
 
 class BB < BabyBots::BabyBot
   def initialize
@@ -52,122 +69,144 @@ end
 
 
 describe BabyBots::BabyBot do
+  before(:each) do
+    @test  = nil
+    @test2 = nil
+  end
+
+  after(:each) do
+    @test  = nil
+    @test2 = nil
+  end
+  
   it "should be able to be initiated with no additional initialization" do
-    test = BabyBots::BabyBot.new
-    test.states.should == {}
+    @test = BabyBots::BabyBot.new
+    @test.empty?.should == true
+    @test = nil
   end
 
   it "should be able to be initialized with a state table" do
-    test = BabyBots::BabyBot.new(TEST_MACHINE1)
-    test.states.should == {:loading => $loading, :ready => $ready, :run => $run}
+    @test = BabyBots::BabyBot.new(TEST_MACHINE1)
+    @test.states.should == {:loading => $loading, :ready => $ready, :run => $run}
   end
 
   it "should have states be able to be added using add_state" do
-    test = BabyBots::BabyBot.new
-    test.add_state($loading)
-    test.states.should == {:loading => $loading}
-    test.add_state($ready)
-    test.states.should == {:loading => $loading, :ready => $ready}
-    test.add_state($run)
-    test.states.should == {:loading => $loading, :ready => $ready, :run => $run}
+    @test = BabyBots::BabyBot.new
+    @test.add_state($loading)
+    @test.states.should == {:loading => $loading}
+    @test.add_state($ready)
+    @test.states.should == {:loading => $loading, :ready => $ready}
+    @test.add_state($run)
+    @test.states.should == {:loading => $loading, :ready => $ready, :run => $run}
   end
 
   it "should be able to have states built using the build method" do
-    test = BabyBots::BabyBot.new
-    test.build(TEST_MACHINE1)
+    @test = BabyBots::BabyBot.new
+    @test.build(TEST_MACHINE1)
   end
 
   it "should allow states to be overwritten using build" do
-    test = BabyBots::BabyBot.new(TEST_MACHINE1)
-    test.build({ :loading => {1 => :run, 2 => :loading} })
+    @test = BabyBots::BabyBot.new(TEST_MACHINE1)
+    @test.build({ :loading => {1 => :run, 2 => :loading} })
 
-    test2 = BabyBots::BabyBot.new({ :loading => {1 => :run, 2 => :loading},
+    @test2 = BabyBots::BabyBot.new({ :loading => {1 => :run, 2 => :loading},
                                    :ready   => {1 => :run, :else => :loading},
                                    :run     => {:else => :run} })
-    test.states.should == test2.states
+    @test.states.should == @test2.states
   end
 
-  it "should run the example, with the starting state being loading" do
-    test = BB.new
-    test.start.state.should == :loading
+  it "should provide state-based error handling" do
+    @test = ERRTEST.new
+    msg = @test.process(42)
+    msg.should == "Error loading"
+    @test.state.should == :loading
+    @test.process(1)
+    @test.state.should == :ready
+    msg = @test.process(42)
+    msg.should == "Error ready"
+  end 
+
+  it "should run the example, with the starting state being 'loading'" do
+    @test = BB.new
+    @test.start.state.should == :loading
   end
 
   it "should run the example, with the current state being loading" do
-    test = BB.new
-    test.state.should == :loading
+    @test = BB.new
+    @test.state.should == :loading
   end
 
   it "should run the example, iterating from loading to ready on inputs 1" do
-    test = BB.new
-    test.process(1)
-    test.state.should == :ready
+    @test = BB.new
+    @test.process(1)
+    @test.state.should == :ready
   end
 
   it "should run the example, using pre_loading to convert \"1\" to 1" do
-    test = BB.new
-    test.process("1")
-    test.state.should == :ready
+    @test = BB.new
+    @test.process("1")
+    @test.state.should == :ready
   end
 
   it "should run the example, using pre_loading to convert \"1\" to 1" do
-    test = BB.new
-    test.process("1")
-    test.state.should == :ready
+    @test = BB.new
+    @test.process("1")
+    @test.state.should == :ready
   end
 
   it "should run the example, use pre_loading to convert \"1\" to 1, but use post_loading to return \"1\"" do
-    test = BB.new
-    final_var = test.process("1")
-    test.state.should == :ready
+    @test = BB.new
+    final_var = @test.process("1")
+    @test.state.should == :ready
     final_var.should == "1"
   end
 
   it "should run the example, and be able to be reset using the restart method" do
-    test = BB.new
-    test.process(1)
-    test.state.should == :ready
-    test.restart
-    test.state.should == :loading
+    @test = BB.new
+    @test.process(1)
+    @test.state.should == :ready
+    @test.restart
+    @test.state.should == :loading
   end
 
   it "should run the example, where anything other than \"1\" or \"0\" looping in :ready" do
-    test = BB.new
-    test.process(1)
-    test.state.should == :ready
-    test.process("banana phone")
-    test.state.should == :ready
-    test.process(99)
-    test.state.should == :ready
-    test.process
-    test.state.should == :ready
+    @test = BB.new
+    @test.process(1)
+    @test.state.should == :ready
+    @test.process("banana phone")
+    @test.state.should == :ready
+    @test.process(99)
+    @test.state.should == :ready
+    @test.process
+    @test.state.should == :ready
   end
 
   it "should run the example, lacking a pre_run should not have any ill side-effects" do
-    test = BB.new
-    test.process(1)
-    test.process(1)
-    ret1 = test.process("chocolate rain")
-    ret2 = test.process("gournal")
+    @test = BB.new
+    @test.process(1)
+    @test.process(1)
+    ret1 = @test.process("chocolate rain")
+    ret2 = @test.process("gournal")
     ret1.should == ret2
     ret2.should == true
   end
 
   it "should run the example, and not have issue with a zero-arity method" do
-    test = BB2.new
-    test.process(1)
-    test.process(1)
-    test.state.should == :run
+    @test = BB2.new
+    @test.process(1)
+    @test.process(1)
+    @test.state.should == :run
   end
 
   it "should run the example, and raise an ArgumentError on arity error" do
-    test = BB3.new
-    lambda{ test.process(1)}.should raise_error ArgumentError
+    @test = BB3.new
+    lambda{ @test.process(1)}.should raise_error ArgumentError
   end
 
   it "should allow the current state to be checked with the message {state_name}?" do
-    test = BB.new
-    test.loading?.should == true
-    test.not_ready?.should == false
+    @test = BB.new
+    @test.loading?.should == true
+    @test.not_ready?.should == false
   end
 
 end
